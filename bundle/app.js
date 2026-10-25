@@ -220,20 +220,23 @@ async function runAnalysis(payload) {
     });
 
     setLoading(false);
-    if (res && res.success && res.data) {
-      renderClips(res.data);
+    const clipsPayload = (res && res.data) ? res.data : (res && res.clips ? res : null);
+    if (clipsPayload && Array.isArray(clipsPayload.clips)) {
+      renderClips(clipsPayload);
       // Persist last run in storage
-      await anna.storage.set({
-        key: "clip-studio:last_analysis",
-        value: {
-          title: res.data.title,
-          video_id: res.data.video_id,
-          total_clips: res.data.total_clips_found,
-          timestamp: Date.now()
-        }
-      });
+      if (anna && anna.storage) {
+        await anna.storage.set({
+          key: "clip-studio:last_analysis",
+          value: {
+            title: clipsPayload.title,
+            video_id: clipsPayload.video_id,
+            total_clips: clipsPayload.total_clips_found || clipsPayload.clips.length,
+            timestamp: Date.now()
+          }
+        });
+      }
     } else {
-      setError(res ? (res.error || "Analysis failed") : "Empty response from engine");
+      setError(res ? (res.error || "Analysis returned no clips") : "Empty response from engine");
     }
   } catch (err) {
     setLoading(false);
