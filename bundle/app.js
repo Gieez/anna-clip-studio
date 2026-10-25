@@ -136,7 +136,7 @@ function renderClips(data) {
           <span class="badge">${clip.duration}s</span>
         </div>
         <div>
-          ${clip.youtube_url ? `<a href="${clip.youtube_url}" target="_blank" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp}</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
+          ${clip.youtube_url ? `<a href="${clip.youtube_url}" target="_blank" rel="noopener noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp}</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
         </div>
       </div>
       <h4 class="clip-title">${clip.title}</h4>

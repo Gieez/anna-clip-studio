@@ -372,7 +372,7 @@ def extract_clips_from_snippets(
             f"Watch the full breakdown ({st_fmt} - {en_fmt}). What do you think?"
         )
 
-        yt_link = f"https://youtu.be/{video_id}?t={int(c['start'])}" if video_id else ""
+        yt_link = f"https://www.youtube.com/watch?v={video_id}&t={int(c['start'])}s" if video_id else ""
 
         output_clips.append({
             "id": f"clip_{clip_num}",
