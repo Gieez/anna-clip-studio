@@ -97,6 +97,21 @@ function switchTab(isManual) {
   }
 }
 
+function getCanonicalYoutubeUrl(clip, videoId) {
+  const sec = Math.floor(clip.start_time || 0);
+  const vId = videoId || (clip.youtube_url ? (clip.youtube_url.match(/(?:v=|youtu\.be\/)([^?&#]+)/) || [])[1] : "");
+  if (vId) {
+    return `https://www.youtube.com/watch?v=${vId}&t=${sec}s`;
+  }
+  if (clip.youtube_url && clip.youtube_url.includes("youtu.be/")) {
+    const m = clip.youtube_url.match(/youtu\.be\/([^?&]+)/);
+    if (m) {
+      return `https://www.youtube.com/watch?v=${m[1]}&t=${sec}s`;
+    }
+  }
+  return clip.youtube_url || "";
+}
+
 function renderClips(data) {
   currentClipsData = data;
   resultsPanel.classList.remove("hidden");
@@ -127,6 +142,7 @@ function renderClips(data) {
     card.className = "clip-card";
 
     const scoreColorClass = clip.virality_score >= 88 ? "badge-green" : "badge-amber";
+    const canonicalYtUrl = getCanonicalYoutubeUrl(clip, data.video_id);
 
     card.innerHTML = `
       <div class="card-top">
@@ -136,7 +152,7 @@ function renderClips(data) {
           <span class="badge">${clip.duration}s</span>
         </div>
         <div>
-          ${clip.youtube_url ? `<a href="${clip.youtube_url}" target="_blank" rel="noopener noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp}</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
+          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noopener noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp}</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
         </div>
       </div>
       <h4 class="clip-title">${clip.title}</h4>
@@ -151,6 +167,14 @@ function renderClips(data) {
     `;
 
     // Action listeners
+    const timeLink = card.querySelector(".timecode-link");
+    if (timeLink) {
+      timeLink.addEventListener("click", () => {
+        navigator.clipboard.writeText(canonicalYtUrl);
+        showToast("YouTube link (" + clip.start_timestamp + ") copied!");
+      });
+    }
+
     card.querySelector(".btn-copy-script").addEventListener("click", () => {
       navigator.clipboard.writeText(clip.script);
       showToast("Shorts Script copied!");
@@ -163,9 +187,9 @@ function renderClips(data) {
     });
 
     card.querySelector(".btn-copy-timestamps").addEventListener("click", () => {
-      const timecodeText = `${clip.title} (${clip.start_timestamp} - ${clip.end_timestamp})\n${clip.youtube_url || ""}`;
+      const timecodeText = `${clip.title} (${clip.start_timestamp} - ${clip.end_timestamp})\n${canonicalYtUrl}`;
       navigator.clipboard.writeText(timecodeText);
-      showToast("Timecode copied!");
+      showToast("Timecode & link copied!");
     });
 
     clipsList.appendChild(card);
