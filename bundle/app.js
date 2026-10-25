@@ -1,4 +1,4 @@
-// ClipStudio AI — Anna App Client Bundle
+// ClipStudio AI — Anna OS Studio Bundle
 import { AnnaAppRuntime } from "/static/anna-apps/_sdk/latest/index.js";
 
 const TOOL_ID = "tool-dev-clip-studio";
@@ -14,9 +14,11 @@ const panelYt = document.getElementById("panel-yt");
 const panelManual = document.getElementById("panel-manual");
 
 const ytUrlInput = document.getElementById("yt-url");
+const btnPasteClipboard = document.getElementById("btn-paste-clipboard");
 const manualTranscriptInput = document.getElementById("manual-transcript");
 const customFocusInput = document.getElementById("custom-focus");
 const durationChips = document.querySelectorAll("#duration-group .chip");
+const presetPills = document.querySelectorAll(".preset-pill");
 
 const btnAnalyze = document.getElementById("btn-analyze");
 const btnAnalyzeManual = document.getElementById("btn-analyze-manual");
@@ -29,10 +31,13 @@ const errorMessage = document.getElementById("error-message");
 const resultsPanel = document.getElementById("results-panel");
 
 const metaThumb = document.getElementById("meta-thumb");
+const metaDurationOverlay = document.getElementById("meta-duration-overlay");
 const metaTitle = document.getElementById("meta-title");
 const metaAuthor = document.getElementById("meta-author");
 const metaDuration = document.getElementById("meta-duration");
 const metaClipsCount = document.getElementById("meta-clips-count");
+const timelineTrack = document.getElementById("timeline-track");
+const timelineRangeLabel = document.getElementById("timeline-range-label");
 const clipsList = document.getElementById("clips-list");
 const toast = document.getElementById("toast");
 
@@ -65,7 +70,7 @@ function showToast(message) {
   }, 2200);
 }
 
-function setLoading(isLoading, text = "Analyzing video...") {
+function setLoading(isLoading, text = "Scanning video transcript & calculating virality score...") {
   if (isLoading) {
     loadingState.classList.remove("hidden");
     loadingText.textContent = text;
@@ -112,6 +117,44 @@ function getCanonicalYoutubeUrl(clip, videoId) {
   return clip.youtube_url || "";
 }
 
+function renderTimeline(clips, totalDurationSec) {
+  if (!timelineTrack) return;
+  timelineTrack.innerHTML = "";
+
+  const total = Math.max(totalDurationSec || 60, clips.reduce((max, c) => Math.max(max, c.end_time || 0), 60));
+  const formatTime = (s) => {
+    const mins = Math.floor(s / 60);
+    const secs = Math.floor(s % 60);
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
+  timelineRangeLabel.textContent = `00:00 - ${formatTime(total)}`;
+
+  clips.forEach((clip, idx) => {
+    const leftPct = Math.min(95, Math.max(0, (clip.start_time / total) * 100));
+    const widthPct = Math.min(100 - leftPct, Math.max(4, (clip.duration / total) * 100));
+
+    const seg = document.createElement("div");
+    seg.className = "timeline-segment";
+    seg.style.left = `${leftPct}%`;
+    seg.style.width = `${widthPct}%`;
+    seg.title = `Clip #${idx + 1}: ${clip.title} (${clip.virality_score}% Virality)`;
+
+    seg.innerHTML = `<span class="segment-label">#${idx + 1}</span>`;
+
+    seg.addEventListener("click", () => {
+      const card = document.getElementById(`card-${clip.id}`);
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        card.classList.add("highlighted");
+        setTimeout(() => card.classList.remove("highlighted"), 1800);
+      }
+    });
+
+    timelineTrack.appendChild(seg);
+  });
+}
+
 function renderClips(data) {
   currentClipsData = data;
   resultsPanel.classList.remove("hidden");
@@ -129,44 +172,80 @@ function renderClips(data) {
   metaDuration.textContent = `Target: ${data.target_duration.toUpperCase()}`;
   metaClipsCount.textContent = `${data.total_clips_found} Viral Clips Found`;
 
+  const clips = data.clips || [];
+  const maxEnd = clips.reduce((max, c) => Math.max(max, c.end_time || 0), 0);
+  const mins = Math.floor(maxEnd / 60);
+  const secs = Math.floor(maxEnd % 60);
+  metaDurationOverlay.textContent = maxEnd > 0 ? `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}` : "00:00";
+
+  // Render Timeline Heatmap
+  renderTimeline(clips, maxEnd);
+
   // Render Cards
   clipsList.innerHTML = "";
 
-  if (!data.clips || data.clips.length === 0) {
+  if (clips.length === 0) {
     clipsList.innerHTML = `<div class="clip-card"><p class="text-muted">No high-retention clips met the threshold for this duration. Try selecting a different duration or adjusting custom focus.</p></div>`;
     return;
   }
 
-  data.clips.forEach((clip, index) => {
+  clips.forEach((clip, index) => {
     const card = document.createElement("div");
     card.className = "clip-card";
+    card.id = `card-${clip.id}`;
 
-    const scoreColorClass = clip.virality_score >= 88 ? "badge-green" : "badge-amber";
     const canonicalYtUrl = getCanonicalYoutubeUrl(clip, data.video_id);
 
     card.innerHTML = `
       <div class="card-top">
         <div class="card-top-left">
           <span class="clip-id-tag">#${index + 1}</span>
-          <span class="virality-pill ${scoreColorClass}">${clip.virality_score}% VIRALITY</span>
+          <div class="virality-meter">
+            <span class="virality-val">${clip.virality_score}% VIRALITY</span>
+            <div class="virality-bar-bg">
+              <div class="virality-bar-fill" style="width: ${clip.virality_score}%"></div>
+            </div>
+          </div>
           <span class="badge">${clip.duration}s</span>
         </div>
         <div>
-          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noopener noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp}</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
+          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noopener noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
         </div>
       </div>
-      <h4 class="clip-title">${clip.title}</h4>
+
+      <h3 class="clip-title">${clip.title}</h3>
+
       <div class="hook-box">
-        "${clip.hook_quote}"
+        <span class="quote-icon">“</span>
+        <span>${clip.hook_quote}</span>
       </div>
-      <div class="clip-actions">
-        <button class="btn-action btn-copy-script" data-id="${clip.id}">📋 Copy Script</button>
-        <button class="btn-action btn-copy-caption" data-id="${clip.id}">💬 Copy Caption</button>
-        <button class="btn-action btn-copy-timestamps" data-id="${clip.id}">⏱️ Copy Timecode</button>
+
+      <!-- Tabbed Viewer: Script, Caption, Excerpt -->
+      <div class="card-content-tabs">
+        <div class="content-tab-nav">
+          <button class="c-tab-btn active" data-tab="script">📋 3-Part Script</button>
+          <button class="c-tab-btn" data-tab="caption">💬 Social Caption</button>
+          <button class="c-tab-btn" data-tab="transcript">📜 Full Excerpt</button>
+        </div>
+
+        <div class="tab-pane pane-script">
+          <button class="btn-copy-pane" title="Copy script">📋 Copy</button>
+          <pre class="tab-pre">${clip.script}</pre>
+        </div>
+
+        <div class="tab-pane pane-caption hidden">
+          <button class="btn-copy-pane" title="Copy caption">📋 Copy</button>
+          <pre class="tab-pre">${clip.caption}\n\n${clip.hashtags.join(" ")}</pre>
+        </div>
+
+        <div class="tab-pane pane-transcript hidden">
+          <button class="btn-copy-pane" title="Copy transcript">📋 Copy</button>
+          <pre class="tab-pre">${clip.full_transcript}</pre>
+        </div>
       </div>
     `;
 
-    // Action listeners
+    // Timecode link click -> auto copy fallback
     const timeLink = card.querySelector(".timecode-link");
     if (timeLink) {
       timeLink.addEventListener("click", () => {
@@ -175,21 +254,42 @@ function renderClips(data) {
       });
     }
 
-    card.querySelector(".btn-copy-script").addEventListener("click", () => {
-      navigator.clipboard.writeText(clip.script);
-      showToast("Shorts Script copied!");
+    // Card Tabs logic
+    const tabBtns = card.querySelectorAll(".c-tab-btn");
+    const paneScript = card.querySelector(".pane-script");
+    const paneCaption = card.querySelector(".pane-caption");
+    const paneTranscript = card.querySelector(".pane-transcript");
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.getAttribute("data-tab");
+
+        paneScript.classList.add("hidden");
+        paneCaption.classList.add("hidden");
+        paneTranscript.classList.add("hidden");
+
+        if (tab === "script") paneScript.classList.remove("hidden");
+        if (tab === "caption") paneCaption.classList.remove("hidden");
+        if (tab === "transcript") paneTranscript.classList.remove("hidden");
+      });
     });
 
-    card.querySelector(".btn-copy-caption").addEventListener("click", () => {
-      const fullCaption = `${clip.caption}\n\n${clip.hashtags.join(" ")}`;
-      navigator.clipboard.writeText(fullCaption);
+    // Pane Copy Buttons
+    paneScript.querySelector(".btn-copy-pane").addEventListener("click", () => {
+      navigator.clipboard.writeText(clip.script);
+      showToast("3-Part Script copied!");
+    });
+
+    paneCaption.querySelector(".btn-copy-pane").addEventListener("click", () => {
+      navigator.clipboard.writeText(`${clip.caption}\n\n${clip.hashtags.join(" ")}`);
       showToast("Caption & Hashtags copied!");
     });
 
-    card.querySelector(".btn-copy-timestamps").addEventListener("click", () => {
-      const timecodeText = `${clip.title} (${clip.start_timestamp} - ${clip.end_timestamp})\n${canonicalYtUrl}`;
-      navigator.clipboard.writeText(timecodeText);
-      showToast("Timecode & link copied!");
+    paneTranscript.querySelector(".btn-copy-pane").addEventListener("click", () => {
+      navigator.clipboard.writeText(clip.full_transcript);
+      showToast("Transcript excerpt copied!");
     });
 
     clipsList.appendChild(card);
@@ -197,10 +297,10 @@ function renderClips(data) {
 }
 
 async function runAnalysis(payload) {
-  setLoading(true, "Extracting video transcript & calculating virality score...");
+  setLoading(true, "Scanning video transcript & calculating virality score...");
 
   if (!anna) {
-    // Standalone fallback mock
+    // Standalone fallback preview
     setTimeout(() => {
       setLoading(false);
       renderClips({
@@ -221,14 +321,15 @@ async function runAnalysis(payload) {
             duration: 30.0,
             virality_score: 95,
             hook_quote: "The biggest mistake creators make is waiting until the middle to drop the value.",
-            script: "[HOOK]\n\"The biggest mistake creators make...\"\n\n[BODY]\n\"Drop value in first 5s.\"\n\n[CTA]\n\"Subscribe for more.\"",
+            full_transcript: "The biggest mistake creators make is waiting until the middle to drop the value. Hook them in the first 3 seconds, deliver value in 20 seconds, and close with a punchy CTA.",
+            script: "[HOOK - 0s-3s]\n\"The biggest mistake creators make...\"\n\n[BODY - 3s-27s]\n\"Hook them in first 3s and deliver immediate value.\"\n\n[CTA - Final 3s]\n\"Follow for more creator secrets!\"",
             caption: "🔥 The biggest retention mistake creators make.\n\nWatch (00:14 - 00:44).",
             hashtags: ["#shorts", "#creator", "#viral"],
-            youtube_url: "https://youtu.be/demo?t=14"
+            youtube_url: "https://www.youtube.com/watch?v=jNQXAC9IVRw&t=14s"
           }
         ]
       });
-    }, 800);
+    }, 700);
     return;
   }
 
@@ -247,7 +348,6 @@ async function runAnalysis(payload) {
     const clipsPayload = (res && res.data) ? res.data : (res && res.clips ? res : null);
     if (clipsPayload && Array.isArray(clipsPayload.clips)) {
       renderClips(clipsPayload);
-      // Persist last run in storage
       if (anna && anna.storage) {
         await anna.storage.set({
           key: "clip-studio:last_analysis",
@@ -272,6 +372,33 @@ async function main() {
   // Tab Switching
   tabYt.addEventListener("click", () => switchTab(false));
   tabManual.addEventListener("click", () => switchTab(true));
+
+  // Quick Preset Pills
+  presetPills.forEach(pill => {
+    pill.addEventListener("click", () => {
+      const url = pill.getAttribute("data-url");
+      if (url) {
+        switchTab(false);
+        ytUrlInput.value = url;
+        runAnalysis({ url });
+      }
+    });
+  });
+
+  // Paste from clipboard button
+  if (btnPasteClipboard) {
+    btnPasteClipboard.addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          ytUrlInput.value = text.trim();
+          showToast("Pasted from clipboard!");
+        }
+      } catch {
+        ytUrlInput.focus();
+      }
+    });
+  }
 
   // Duration Chips
   durationChips.forEach(chip => {
@@ -313,9 +440,10 @@ async function main() {
     let md = `# Viral Clips Report: ${currentClipsData.title}\n\n`;
     md += `**Target Duration**: ${currentClipsData.target_duration.toUpperCase()} | **Total Clips**: ${currentClipsData.total_clips_found}\n\n`;
     currentClipsData.clips.forEach((c, idx) => {
+      const canonicalYt = getCanonicalYoutubeUrl(c, currentClipsData.video_id);
       md += `### Clip #${idx + 1}: ${c.title} (${c.virality_score}% Virality)\n`;
       md += `- **Timecode**: ${c.start_timestamp} - ${c.end_timestamp}\n`;
-      if (c.youtube_url) md += `- **Link**: ${c.youtube_url}\n`;
+      if (canonicalYt) md += `- **Link**: ${canonicalYt}\n`;
       md += `- **Hook**: "${c.hook_quote}"\n\n`;
       md += `#### Script\n\`\`\`\n${c.script}\n\`\`\`\n\n`;
       md += `#### Caption\n${c.caption}\n${c.hashtags.join(" ")}\n\n---\n\n`;

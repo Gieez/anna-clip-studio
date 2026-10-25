@@ -3,42 +3,75 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClipStudio AI</title>
+    <title>ClipStudio AI — Viral Video Intelligence</title>
     <link rel="stylesheet" href="./style.css" />
     <script src="./app.js" type="module"></script>
   </head>
   <body>
     <div class="app-container">
-      <!-- Header -->
+      <!-- Top Studio Header -->
       <header class="app-header">
         <div class="brand">
-          <div class="pulse-indicator"></div>
-          <span class="brand-title">CLIPSTUDIO</span>
-          <span class="brand-sub">AI VIRAL ENGINE</span>
+          <div class="brand-logo">
+            <span class="logo-icon">⚡</span>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title-row">
+              <span class="brand-title">CLIPSTUDIO</span>
+              <span class="brand-version">v1.0</span>
+            </div>
+            <span class="brand-tagline">AI RETENTION & VIRAL ENGINE</span>
+          </div>
         </div>
-        <div class="header-status">
+
+        <div class="header-controls">
+          <div class="sound-bars" title="Audio engine ready">
+            <span></span><span></span><span></span><span></span>
+          </div>
           <span id="connection-status" class="status-badge">READY</span>
         </div>
       </header>
 
-      <!-- Main Input Ribbon -->
+      <!-- Main Input Console -->
       <section class="input-panel">
-        <div class="input-tabs">
-          <button id="tab-yt" class="tab-btn active">YouTube URL</button>
-          <button id="tab-manual" class="tab-btn">Manual Transcript</button>
+        <div class="panel-header-row">
+          <div class="input-tabs">
+            <button id="tab-yt" class="tab-btn active">
+              <span class="tab-icon">▶</span> YouTube URL
+            </button>
+            <button id="tab-manual" class="tab-btn">
+              <span class="tab-icon">📄</span> Subtitles / Transcript
+            </button>
+          </div>
+          <div class="quick-presets">
+            <span class="preset-label">Quick Demo:</span>
+            <button class="preset-pill" data-url="https://www.youtube.com/watch?v=griZI_8FmcA">
+              Raymond Chin
+            </button>
+            <button class="preset-pill" data-url="https://www.youtube.com/watch?v=jNQXAC9IVRw">
+              Zoo Classic
+            </button>
+          </div>
         </div>
 
         <!-- YouTube Form -->
         <div id="panel-yt" class="tab-content active">
           <div class="url-input-group">
-            <input
-              type="text"
-              id="yt-url"
-              placeholder="Paste YouTube video link (e.g. https://youtube.com/watch?v=...)"
-              spellcheck="false"
-            />
+            <div class="input-wrapper">
+              <span class="input-prefix-icon">🔗</span>
+              <input
+                type="text"
+                id="yt-url"
+                placeholder="Paste YouTube video URL (e.g. https://www.youtube.com/watch?v=...)"
+                spellcheck="false"
+              />
+              <button id="btn-paste-clipboard" class="btn-input-icon" title="Paste from clipboard">
+                📋
+              </button>
+            </div>
             <button id="btn-analyze" class="btn-primary">
-              <span class="btn-icon">⚡</span> Analyze Clips
+              <span class="btn-icon">⚡</span>
+              <span>Analyze Clips</span>
             </button>
           </div>
         </div>
@@ -47,12 +80,12 @@
         <div id="panel-manual" class="tab-content">
           <textarea
             id="manual-transcript"
-            placeholder="Paste subtitles or transcript (SRT, VTT, or plain text with timestamps)..."
+            placeholder="Paste raw transcript, SRT subtitles, or timestamped text..."
             rows="4"
           ></textarea>
           <div class="manual-actions">
             <button id="btn-analyze-manual" class="btn-primary">
-              <span class="btn-icon">⚡</span> Analyze Text
+              <span class="btn-icon">⚡</span> Analyze Transcript
             </button>
           </div>
         </div>
@@ -60,7 +93,7 @@
         <!-- Controls Row -->
         <div class="controls-row">
           <div class="control-item">
-            <label for="clip-duration">Target Duration:</label>
+            <label>Target Duration:</label>
             <div class="chip-group" id="duration-group">
               <button class="chip" data-dur="15s">15s Hook</button>
               <button class="chip active" data-dur="30s">30s Viral</button>
@@ -72,16 +105,25 @@
             <input
               type="text"
               id="custom-focus"
-              placeholder="e.g. business lessons, controversial truth, actionable steps"
+              placeholder="e.g. business lessons, controversial truth, action steps"
             />
           </div>
         </div>
       </section>
 
-      <!-- Loading / Progress State -->
+      <!-- Skeleton Shimmer Loading State -->
       <div id="loading-state" class="loading-state hidden">
-        <div class="spinner"></div>
-        <div class="loading-text" id="loading-text">Extracting video transcript & calculating virality score...</div>
+        <div class="loading-top">
+          <div class="spinner"></div>
+          <div class="loading-text" id="loading-text">
+            Scanning video transcript & calculating virality score...
+          </div>
+        </div>
+        <div class="skeleton-deck">
+          <div class="skeleton-bar shimmer"></div>
+          <div class="skeleton-card shimmer"></div>
+          <div class="skeleton-card shimmer"></div>
+        </div>
       </div>
 
       <!-- Error State -->
@@ -90,30 +132,47 @@
         <span id="error-message">Something went wrong.</span>
       </div>
 
-      <!-- Results Panel -->
+      <!-- Results Workspace -->
       <main id="results-panel" class="results-panel hidden">
         <!-- Video Meta Overview -->
         <div class="video-meta-card">
-          <img id="meta-thumb" class="meta-thumb" src="" alt="Thumbnail" />
+          <div class="thumb-container">
+            <img id="meta-thumb" class="meta-thumb" src="" alt="Thumbnail" />
+            <span id="meta-duration-overlay" class="thumb-time-pill">00:00</span>
+          </div>
           <div class="meta-info">
             <h2 id="meta-title" class="meta-title">Video Title</h2>
             <div class="meta-badges">
-              <span id="meta-author" class="badge">Creator</span>
-              <span id="meta-duration" class="badge badge-amber">00:00</span>
-              <span id="meta-clips-count" class="badge badge-green">0 clips found</span>
+              <span id="meta-author" class="badge badge-channel">Creator</span>
+              <span id="meta-duration" class="badge badge-amber">Target: 30S</span>
+              <span id="meta-clips-count" class="badge badge-green">5 clips detected</span>
             </div>
           </div>
           <div class="meta-actions">
-            <button id="btn-export-all" class="btn-secondary" title="Export markdown to chat">
-              📤 Export All
+            <button id="btn-export-all" class="btn-secondary" title="Export markdown report">
+              <span class="btn-icon">📤</span> Export Report
             </button>
           </div>
         </div>
 
-        <!-- Clip Cards List -->
+        <!-- Interactive Heatmap / Timeline Scrubber -->
+        <section class="timeline-section">
+          <div class="timeline-header">
+            <span class="timeline-title">VIRAL RETENTION TIMELINE</span>
+            <span id="timeline-range-label" class="timeline-range">00:00 - 08:21</span>
+          </div>
+          <div id="timeline-track" class="timeline-track">
+            <!-- Timeline markers generated dynamically -->
+          </div>
+        </section>
+
+        <!-- Clip Cards List Header -->
         <div class="clips-header">
-          <h3>VIRAL CLIP CANDIDATES (SORTED BY RETENTION SCORE)</h3>
+          <span class="clips-header-title">RANKED CLIP CANDIDATES</span>
+          <span class="clips-header-sub">Click timecode to open at exact second on YouTube</span>
         </div>
+
+        <!-- Clip Cards Deck -->
         <div id="clips-list" class="clips-list">
           <!-- Dynamically populated -->
         </div>
