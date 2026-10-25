@@ -1,0 +1,2 @@
+[console_scripts]
+tool-dev-clip-studio = clip_studio_plugin:main

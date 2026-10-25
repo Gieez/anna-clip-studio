@@ -38,6 +38,24 @@ const toast = document.getElementById("toast");
 
 let selectedDuration = "30s";
 
+// Theme handling
+function applyTheme(theme) {
+  const t = theme === "light" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", t);
+}
+
+// Initial theme from URL query param
+const urlParams = new URLSearchParams(window.location.search);
+applyTheme(urlParams.get("theme") || "dark");
+
+// Listen to postMessage theme updates from harness/dashboard
+window.addEventListener("message", (event) => {
+  if (!event.data) return;
+  if (event.data.type === "theme" || event.data.theme) {
+    applyTheme(event.data.theme || event.data.value);
+  }
+});
+
 function showToast(message) {
   if (!toast) return;
   toast.textContent = message;
@@ -285,6 +303,16 @@ async function main() {
     statusBadge.textContent = "CONNECTED";
     statusBadge.classList.add("badge-green");
     await anna.window.set_title({ title: "ClipStudio // Viral Intelligence" });
+
+    // Sync theme from Anna host
+    if (anna.theme) {
+      applyTheme(anna.theme);
+    }
+    if (typeof anna.onThemeChange === "function") {
+      anna.onThemeChange(({ theme }) => {
+        applyTheme(theme);
+      });
+    }
   } catch (e) {
     statusBadge.textContent = "STANDALONE";
     console.log("Running in standalone preview mode (no host):", e);

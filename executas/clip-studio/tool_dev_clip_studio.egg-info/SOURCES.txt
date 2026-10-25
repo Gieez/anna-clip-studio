@@ -1,0 +1,8 @@
+clip_studio_plugin.py
+pyproject.toml
+tool_dev_clip_studio.egg-info/PKG-INFO
+tool_dev_clip_studio.egg-info/SOURCES.txt
+tool_dev_clip_studio.egg-info/dependency_links.txt
+tool_dev_clip_studio.egg-info/entry_points.txt
+tool_dev_clip_studio.egg-info/requires.txt
+tool_dev_clip_studio.egg-info/top_level.txt

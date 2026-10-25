@@ -487,6 +487,16 @@ def invoke(method: str, args: dict) -> dict:
 
 
 def main() -> None:
+    try:
+        if hasattr(sys.stdin, "reconfigure"):
+            sys.stdin.reconfigure(encoding="utf-8")
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
     for line in sys.stdin:
         line = line.strip()
         if not line:
@@ -496,9 +506,12 @@ def main() -> None:
         except Exception:
             continue
 
+        req_id = req.get("id")
         try:
             method = req.get("method")
-            if method == "describe":
+            if method == "initialize":
+                result = {"protocolVersion": "1.0", "capabilities": {}}
+            elif method == "describe":
                 result = MANIFEST
             elif method == "health":
                 result = {"status": "ready"}
@@ -510,15 +523,16 @@ def main() -> None:
             else:
                 raise ValueError(f"unknown rpc method: {method}")
 
-            sys.stdout.write(json.dumps({"jsonrpc": "2.0", "id": req.get("id"), "result": result}) + "\n")
+            sys.stdout.write(json.dumps({"jsonrpc": "2.0", "id": req_id, "result": result}, ensure_ascii=False) + "\n")
         except Exception as e:
             sys.stdout.write(
                 json.dumps(
                     {
                         "jsonrpc": "2.0",
-                        "id": req.get("id"),
+                        "id": req_id,
                         "error": {"code": -32601, "message": str(e)},
-                    }
+                    },
+                    ensure_ascii=False
                 )
                 + "\n"
             )

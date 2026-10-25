@@ -1,0 +1,6 @@
+{
+  "tool_id": "tool-dev-clip-studio",
+  "type": "python",
+  "enabled": true,
+  "command": ["uv", "run", "python", "clip_studio_plugin.py"]
+}
