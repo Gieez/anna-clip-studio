@@ -1,0 +1,9 @@
+{
+  "$schema": "anna-executa-identity/v1",
+  "host": "https://anna.partners",
+  "executa_id": 1262,
+  "tool_id": "tool-clipstudio-ai-clip-studio-swm5kj3k",
+  "slug": "clip-studio",
+  "executa_type": "tool",
+  "first_published_at": "2026-10-25T06:54:26.606Z"
+}

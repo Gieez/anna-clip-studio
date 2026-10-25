@@ -2,6 +2,7 @@
 import { AnnaAppRuntime } from "/static/anna-apps/_sdk/latest/index.js";
 
 const TOOL_ID = "tool-dev-clip-studio";
+let activeToolId = TOOL_ID;
 
 let anna = null;
 let currentClipsData = null;
@@ -335,7 +336,7 @@ async function runAnalysis(payload) {
 
   try {
     const res = await anna.tools.invoke({
-      tool_id: TOOL_ID,
+      tool_id: activeToolId,
       method: "analyze_viral_clips",
       args: {
         ...payload,
@@ -458,6 +459,14 @@ async function main() {
     statusBadge.textContent = "CONNECTED";
     statusBadge.classList.add("badge-green");
     await anna.window.set_title({ title: "ClipStudio // Viral Intelligence" });
+
+    // Dynamic tool_id detection from granted scopes
+    if (anna && anna.capabilities && Array.isArray(anna.capabilities.scopes)) {
+      const toolScope = anna.capabilities.scopes.find(s => s.startsWith("tools.") && s !== "tools.*");
+      if (toolScope) {
+        activeToolId = toolScope.slice("tools.".length);
+      }
+    }
 
     // Sync theme from Anna host
     if (anna.theme) {

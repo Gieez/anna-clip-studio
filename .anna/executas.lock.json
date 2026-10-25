@@ -1,0 +1,11 @@
+{
+  "$schema": "anna-executas-lock/v1",
+  "host": "https://anna.partners",
+  "executas": {
+    "clip-studio": {
+      "tool_id": "tool-clipstudio-ai-clip-studio-swm5kj3k",
+      "path": "executas/clip-studio",
+      "source": "cut"
+    }
+  }
+}

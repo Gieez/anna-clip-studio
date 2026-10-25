@@ -1,0 +1,8 @@
+{
+  "$schema": "anna-app-identity/v1",
+  "host": "https://anna.partners",
+  "app_id": 699,
+  "slug": "clip-studio",
+  "handle": "clipstudio-ai",
+  "first_published_at": "2026-10-25T06:48:42.037Z"
+}

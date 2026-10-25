@@ -2,7 +2,7 @@
   "schema": 2,
   "required_executas": [
     {
-      "tool_id": "tool-dev-clip-studio"
+      "tool_id": "bundled:clip-studio"
     }
   ],
   "tags": [
@@ -14,7 +14,7 @@
     "viral",
     "productivity"
   ],
-  "system_prompt_addendum": "When user mentions #clip-studio or shares a YouTube link to extract clips, use tool-dev-clip-studio to analyze viral retention hotspots, timestamps, and hooks. Format findings clearly with timecodes and punchy scripts.",
+  "system_prompt_addendum": "When user mentions #clip-studio or shares a YouTube link to extract clips, use bundled:clip-studio to analyze viral retention hotspots, timestamps, and hooks. Format findings clearly with timecodes and punchy scripts.",
   "user_message_prefix_template": "[ClipStudio] {user_message}",
   "ui": {
     "bundle": {
@@ -39,7 +39,7 @@
       "mobile"
     ],
     "host_api": {
-      "tools": ["tool-dev-clip-studio"],
+      "tools": ["bundled:clip-studio"],
       "storage": ["get", "set"],
       "window": ["set_title", "ready"]
     },
