@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClipStudio AI</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./app.js" type="module"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="brand">
+          <div class="pulse-indicator"></div>
+          <span class="brand-title">CLIPSTUDIO</span>
+          <span class="brand-sub">AI VIRAL ENGINE</span>
+        </div>
+        <div class="header-status">
+          <span id="connection-status" class="status-badge">READY</span>
+        </div>
+      </header>
+
+      <!-- Main Input Ribbon -->
+      <section class="input-panel">
+        <div class="input-tabs">
+          <button id="tab-yt" class="tab-btn active">YouTube URL</button>
+          <button id="tab-manual" class="tab-btn">Manual Transcript</button>
+        </div>
+
+        <!-- YouTube Form -->
+        <div id="panel-yt" class="tab-content active">
+          <div class="url-input-group">
+            <input
+              type="text"
+              id="yt-url"
+              placeholder="Paste YouTube video link (e.g. https://youtube.com/watch?v=...)"
+              spellcheck="false"
+            />
+            <button id="btn-analyze" class="btn-primary">
+              <span class="btn-icon">⚡</span> Analyze Clips
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual Transcript Form -->
+        <div id="panel-manual" class="tab-content">
+          <textarea
+            id="manual-transcript"
+            placeholder="Paste subtitles or transcript (SRT, VTT, or plain text with timestamps)..."
+            rows="4"
+          ></textarea>
+          <div class="manual-actions">
+            <button id="btn-analyze-manual" class="btn-primary">
+              <span class="btn-icon">⚡</span> Analyze Text
+            </button>
+          </div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="controls-row">
+          <div class="control-item">
+            <label for="clip-duration">Target Duration:</label>
+            <div class="chip-group" id="duration-group">
+              <button class="chip" data-dur="15s">15s Hook</button>
+              <button class="chip active" data-dur="30s">30s Viral</button>
+              <button class="chip" data-dur="60s">60s Deep</button>
+            </div>
+          </div>
+          <div class="control-item flex-grow">
+            <label for="custom-focus">Focus (Optional):</label>
+            <input
+              type="text"
+              id="custom-focus"
+              placeholder="e.g. business lessons, controversial truth, actionable steps"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Loading / Progress State -->
+      <div id="loading-state" class="loading-state hidden">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-text">Extracting video transcript & calculating virality score...</div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="error-banner hidden">
+        <span class="error-icon">⚠️</span>
+        <span id="error-message">Something went wrong.</span>
+      </div>
+
+      <!-- Results Panel -->
+      <main id="results-panel" class="results-panel hidden">
+        <!-- Video Meta Overview -->
+        <div class="video-meta-card">
+          <img id="meta-thumb" class="meta-thumb" src="" alt="Thumbnail" />
+          <div class="meta-info">
+            <h2 id="meta-title" class="meta-title">Video Title</h2>
+            <div class="meta-badges">
+              <span id="meta-author" class="badge">Creator</span>
+              <span id="meta-duration" class="badge badge-amber">00:00</span>
+              <span id="meta-clips-count" class="badge badge-green">0 clips found</span>
+            </div>
+          </div>
+          <div class="meta-actions">
+            <button id="btn-export-all" class="btn-secondary" title="Export markdown to chat">
+              📤 Export All
+            </button>
+          </div>
+        </div>
+
+        <!-- Clip Cards List -->
+        <div class="clips-header">
+          <h3>VIRAL CLIP CANDIDATES (SORTED BY RETENTION SCORE)</h3>
+        </div>
+        <div id="clips-list" class="clips-list">
+          <!-- Dynamically populated -->
+        </div>
+      </main>
+
+      <!-- Toast Feedback -->
+      <div id="toast" class="toast hidden">Copied to clipboard</div>
+    </div>
+  </body>
+</html>

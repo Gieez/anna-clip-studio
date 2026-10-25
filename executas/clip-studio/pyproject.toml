@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tool-dev-clip-studio"
+version = "0.1.0"
+description = "Executa for the clip-studio Anna App"
+requires-python = ">=3.10"
+dependencies = [
+    "youtube-transcript-api>=0.6.2",
+]
+
+[project.scripts]
+"tool-dev-clip-studio" = "clip_studio_plugin:main"
+
+[tool.setuptools]
+py-modules = ["clip_studio_plugin"]
