@@ -17,11 +17,11 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux-x86_64
-            python_arch: 'x64'
+            python_arch: ''
           - os: macos-14
             platform: darwin-arm64
-            python_arch: 'arm64'
-          - os: macos-13
+            python_arch: ''
+          - os: macos-15
             platform: darwin-x86_64
             python_arch: 'x64'
     runs-on: ${{ matrix.os }}
