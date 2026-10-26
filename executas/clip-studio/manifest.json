@@ -1,0 +1,59 @@
+{
+  "name": "clip-studio",
+  "version": "0.2.0",
+  "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
+  "host_capabilities": ["llm.sample"],
+  "tools": [
+    {
+      "name": "fetch_video_info",
+      "description": "Fetch YouTube video metadata (title, author, thumbnail) and timed transcript.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "YouTube video URL or 11-character video ID"
+          }
+        },
+        "required": ["url"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "analyze_viral_clips",
+      "description": "Analyze video transcript to discover high-retention viral clips, hooks, and scripts.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "YouTube URL (optional if transcript_text is provided)"
+          },
+          "target_duration": {
+            "type": "string",
+            "enum": ["15s", "30s", "60s"],
+            "description": "Target duration for generated clips (default 30s)"
+          },
+          "custom_focus": {
+            "type": "string",
+            "description": "Optional thematic focus (e.g. 'actionable advice', 'controversial truth')"
+          },
+          "transcript_text": {
+            "type": "string",
+            "description": "Optional manual transcript text or SRT format"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ping",
+      "description": "Smoke-test method.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    }
+  ]
+}
