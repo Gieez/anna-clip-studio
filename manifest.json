@@ -40,6 +40,7 @@
     ],
     "host_api": {
       "tools": ["bundled:clip-studio"],
+      "llm": ["complete"],
       "storage": ["get", "set"],
       "window": ["set_title", "ready"]
     },

@@ -13,7 +13,7 @@ from typing import List, Dict, Any, Optional
 
 MANIFEST = {
     "name": "tool-dev-clip-studio",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
     "tools": [
         {
@@ -418,6 +418,7 @@ def handle_fetch_video_info(args: dict) -> dict:
             "total_snippets": len(snippets),
             "estimated_duration_sec": total_duration,
             "formatted_duration": format_timestamp(total_duration),
+            "snippets": snippets,
             "preview_snippets": snippets[:10]
         }
     }
