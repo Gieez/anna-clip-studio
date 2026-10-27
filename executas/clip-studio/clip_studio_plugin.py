@@ -12,62 +12,66 @@ import urllib.parse
 from typing import List, Dict, Any, Optional
 
 MANIFEST = {
-    "name": "tool-dev-clip-studio",
-    "version": "0.2.0",
+    "display_name": "ClipStudio Engine",
+    "version": "0.3.0",
     "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
+    "host_capabilities": ["llm.sample"],
     "tools": [
         {
             "name": "fetch_video_info",
             "description": "Fetch YouTube video metadata (title, author, thumbnail) and timed transcript.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "type": "string",
-                        "description": "YouTube video URL or 11-character video ID"
-                    }
-                },
-                "required": ["url"],
-                "additionalProperties": False,
-            },
+            "parameters": [
+                {
+                    "name": "url",
+                    "type": "string",
+                    "description": "YouTube video URL or 11-character video ID",
+                    "required": True,
+                }
+            ],
+            "timeout": 30,
         },
         {
             "name": "analyze_viral_clips",
             "description": "Analyze video transcript to discover high-retention viral clips, hooks, and scripts.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "type": "string",
-                        "description": "YouTube URL (optional if transcript_text is provided)"
-                    },
-                    "target_duration": {
-                        "type": "string",
-                        "enum": ["15s", "30s", "60s"],
-                        "description": "Target duration for generated clips (default 30s)"
-                    },
-                    "custom_focus": {
-                        "type": "string",
-                        "description": "Optional thematic focus (e.g. 'actionable advice', 'controversial truth')"
-                    },
-                    "transcript_text": {
-                        "type": "string",
-                        "description": "Optional manual transcript text or SRT format"
-                    }
+            "parameters": [
+                {
+                    "name": "url",
+                    "type": "string",
+                    "description": "YouTube URL (optional if transcript_text is provided)",
+                    "required": False,
                 },
-                "additionalProperties": False,
-            },
+                {
+                    "name": "target_duration",
+                    "type": "string",
+                    "description": "Target duration for generated clips (default 30s)",
+                    "required": False,
+                    "default": "30s",
+                    "enum": ["15s", "30s", "60s"],
+                },
+                {
+                    "name": "custom_focus",
+                    "type": "string",
+                    "description": "Optional thematic focus (e.g. 'actionable advice', 'controversial truth')",
+                    "required": False,
+                },
+                {
+                    "name": "transcript_text",
+                    "type": "string",
+                    "description": "Optional manual transcript text or SRT format",
+                    "required": False,
+                },
+            ],
+            "timeout": 60,
         },
         {
             "name": "ping",
             "description": "Smoke-test method.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": False,
-            },
-        }
+            "parameters": [],
+            "timeout": 10,
+        },
     ],
+    "credentials": [],
+    "runtime": {"type": "binary"},
 }
 
 
@@ -514,7 +518,11 @@ def main() -> None:
         try:
             method = req.get("method")
             if method == "initialize":
-                result = {"protocolVersion": "1.0", "capabilities": {}}
+                result = {
+                    "protocolVersion": "2.0",
+                    "server_info": {"name": MANIFEST.get("display_name", "ClipStudio Engine"), "version": MANIFEST["version"]},
+                    "capabilities": {"sampling": {}},
+                }
             elif method == "describe":
                 result = MANIFEST
             elif method == "health":

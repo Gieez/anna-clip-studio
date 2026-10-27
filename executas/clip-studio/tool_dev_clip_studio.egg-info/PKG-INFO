@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: tool-dev-clip-studio
-Version: 0.1.0
+Version: 0.2.0
 Summary: Executa for the clip-studio Anna App
 Requires-Python: >=3.10
 Requires-Dist: youtube-transcript-api>=0.6.2
