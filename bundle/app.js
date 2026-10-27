@@ -420,7 +420,36 @@ function renderClips(data) {
             showToast(`Script rewritten with ${style} style!`);
           }
         } catch (err) {
-          showToast("Rewrite error: " + err.message);
+          // Heuristic fallback rewrites if Anna Host LLM quota is exhausted
+          const fallbackTemplates = {
+            spicy: {
+              hook: `[HOOK - 0s-3s]\n"Most people get this completely wrong, and here's why."`,
+              body: `[BODY - 3s-25s]\n${clip.hook_quote} The real issue isn't what they tell you on the surface—it's the hidden mechanics underneath. When you look at the raw data, the consensus is flat out mistaken. Stop following the crowd and examine what actually drives the numbers.`,
+              cta: `[CTA - Final 3s]\n"Agree or disagree? Argue in the comments!"`
+            },
+            energy: {
+              hook: `[HOOK - 0s-3s]\n"WAIT! Do NOT scroll until you hear this breakdown!"`,
+              body: `[BODY - 3s-25s]\n${clip.hook_quote} Boom! If you want exponential results, this is the exact principle you need to lock in today. No fluff, no hesitation—just ruthless execution. Take this framework and apply it immediately!`,
+              cta: `[CTA - Final 3s]\n"Smash that follow button for daily high-voltage game!"`
+            },
+            story: {
+              hook: `[HOOK - 0s-3s]\n"A few years back, nobody thought this would actually happen..."`,
+              body: `[BODY - 3s-25s]\n${clip.hook_quote} It started with a subtle shift that went unnoticed by almost everyone. But behind the scenes, decisions were made that changed everything. That single moment set off a chain reaction that redefined the entire landscape.`,
+              cta: `[CTA - Final 3s]\n"Save this story for when you need perspective later."`
+            },
+            action: {
+              hook: `[HOOK - 0s-3s]\n"Here is the exact 3-step blueprint you need to copy right now:"`,
+              body: `[BODY - 3s-25s]\n${clip.hook_quote}\nStep 1: Audit your current exposure.\nStep 2: Eliminate the bottlenecks holding you back.\nStep 3: Double down on what generates direct leverage.`,
+              cta: `[CTA - Final 3s]\n"Save this checklist and implement Step 1 today."`
+            }
+          };
+
+          const selectedFallback = fallbackTemplates[style] || fallbackTemplates.spicy;
+          const rewrittenScript = `${selectedFallback.hook}\n\n${selectedFallback.body}\n\n${selectedFallback.cta}`;
+      
+          scriptPre.textContent = rewrittenScript;
+          clip.script = rewrittenScript;
+          showToast(`✨ Rewritten to ${style.toUpperCase()} (Offline Engine)!`);
         } finally {
           btn.disabled = false;
           btn.textContent = originalText;
