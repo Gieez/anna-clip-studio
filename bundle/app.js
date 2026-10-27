@@ -269,7 +269,7 @@ function renderClips(data) {
           <span class="badge">${clip.duration}s</span>
         </div>
         <div>
-          ${canonicalYtUrl ? `<button type="button" class="timecode-link btn-open-timecode" data-url="${canonicalYtUrl}">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</button>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
+          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
         </div>
       </div>
 
@@ -326,30 +326,14 @@ function renderClips(data) {
       </div>
     `;
 
-    // Timecode button click -> safe top-level open + auto-copy
-    const timeBtn = card.querySelector(".btn-open-timecode");
-    if (timeBtn) {
-      timeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const targetUrl = timeBtn.getAttribute("data-url");
-        
-        // 1. Copy URL to clipboard reliably
+    // Timecode link click -> auto copy on click
+    const timeLink = card.querySelector(".timecode-link");
+    if (timeLink) {
+      timeLink.addEventListener("click", () => {
         try {
-          navigator.clipboard.writeText(targetUrl);
-          showToast("Link copied (" + clip.start_timestamp + ")! Opening YouTube...");
+          navigator.clipboard.writeText(canonicalYtUrl);
+          showToast("Link copied: " + clip.start_timestamp);
         } catch {}
-
-        // 2. Open via safe window.open with noopener,noreferrer
-        try {
-          const win = window.open(targetUrl, "_blank", "noopener,noreferrer");
-          if (win) {
-            win.opener = null;
-          }
-        } catch {
-          // If popup blocked by iframe policy, clipboard already has the URL
-          showToast("Link copied to clipboard! Paste in a new tab.");
-        }
       });
     }
 
