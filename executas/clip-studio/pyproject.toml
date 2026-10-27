@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tool-dev-clip-studio"
-version = "0.3.4"
+version = "0.3.5"
 description = "Executa for the clip-studio Anna App"
 requires-python = ">=3.10"
 dependencies = [

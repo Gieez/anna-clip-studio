@@ -278,7 +278,7 @@ function renderClips(data) {
           <span class="badge">${clip.duration}s</span>
         </div>
         <div>
-          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noreferrer noopener" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
+          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_top" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
         </div>
       </div>
 
