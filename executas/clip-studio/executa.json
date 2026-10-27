@@ -2,7 +2,7 @@
   "slug": "clip-studio",
   "name": "ClipStudio Engine",
   "tool_id": "tool-clipstudio-ai-clip-studio-swm5kj3k",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "executa_type": "tool",
   "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
   "type": "python",
