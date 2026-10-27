@@ -13,7 +13,7 @@ from typing import List, Dict, Any, Optional
 
 MANIFEST = {
     "display_name": "ClipStudio Engine",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
     "host_capabilities": ["llm.sample"],
     "tools": [
@@ -112,32 +112,48 @@ def fetch_oembed(video_id: str) -> Dict[str, Any]:
 
 
 def fetch_transcript_snippets(video_id: str) -> List[Dict[str, Any]]:
-    """Fetches transcript snippets using youtube_transcript_api with fallback."""
+    """Fetches transcript snippets using youtube_transcript_api with multi-language fallback."""
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
         api = YouTubeTranscriptApi()
-        # In modern versions api.fetch(video_id) or YouTubeTranscriptApi.fetch
         fetched = None
-        if hasattr(api, "fetch"):
-            try:
-                fetched = api.fetch(video_id)
-            except Exception:
-                pass
-        if not fetched and hasattr(api, "list"):
+
+        # 1. First try listing all available transcripts (supports any language: id, en, es, zh, etc.)
+        if hasattr(api, "list"):
             try:
                 transcript_list = api.list(video_id)
-                # Find English or first available
-                t = None
+                # Prioritize Indonesian or English if available, else take the very first available transcript
+                target_transcript = None
                 for candidate in transcript_list:
-                    if getattr(candidate, "language_code", "").startswith("en"):
-                        t = candidate
+                    code = getattr(candidate, "language_code", "").lower()
+                    if code.startswith("id") or code.startswith("en"):
+                        target_transcript = candidate
                         break
-                if not t:
+                if not target_transcript:
                     for candidate in transcript_list:
-                        t = candidate
+                        target_transcript = candidate
                         break
-                if t:
-                    fetched = t.fetch()
+
+                if target_transcript:
+                    fetched = target_transcript.fetch()
+            except Exception as list_err:
+                sys.stderr.write(f"[clip-studio] api.list failed: {list_err}\n")
+
+        # 2. Fallback: try direct fetch with common languages
+        if not fetched and hasattr(api, "fetch"):
+            common_langs = ("id", "en", "es", "zh-Hans", "zh-Hant", "ja", "ko", "de", "fr", "pt", "ru")
+            for lang in common_langs:
+                try:
+                    fetched = api.fetch(video_id, languages=(lang,))
+                    if fetched:
+                        break
+                except Exception:
+                    continue
+
+        # 3. Last resort direct fetch without lang filter
+        if not fetched and hasattr(api, "fetch"):
+            try:
+                fetched = api.fetch(video_id)
             except Exception:
                 pass
 

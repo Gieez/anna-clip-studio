@@ -1,7 +1,7 @@
 {
   "name": "clip-studio",
   "display_name": "ClipStudio Engine",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
   "host_capabilities": [
     "llm.sample"

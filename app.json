@@ -1,7 +1,7 @@
 {
   "name": "ClipStudio AI",
   "slug": "clip-studio",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "tagline": "Turn long YouTube videos into viral short clips, hooks, and timestamps in seconds",
   "description": "ClipStudio AI is an AI-powered viral video intelligence and short-form clipping studio built natively for Anna AI OS.\n\nPaste any YouTube video link or transcript to instantly detect high-retention moments, extract killer hooks, generate ready-to-post Shorts/Reels scripts, and export timestamps in 1-click.\n\n### Key Features\n- **AI-Powered Semantic Retention Scoring**: Analyzes dialogue flow for emotional triggers, provocative questions, and high-value takeaways to calculate precise virality scores.\n- **Precision Timecodes**: Aligns clip boundaries into tight presets (15s Hook, 30s Viral, 60s Deep Dive) with direct clickable YouTube timestamp links.\n- **3-Part Production Scripts**: Automatically generates ready-to-record scripts formatted for short-form creators: [HOOK] (0s-3s), [BODY] (core value), and [CTA] (engagement driver).\n- **✨ AI Interactive Style Rewriter**: Dynamically rewrite scripts into 4 distinct creator styles: Provocative, High Energy, Storytelling, and Direct Takeaway.\n- **Interactive Retention Timeline**: Visual heatmap bar displaying viral hotspot distributions across the entire video duration with 1-click card focus.\n- **Multi-Platform Support**: Built natively with precompiled binaries for macOS ARM64, macOS x64, Linux x64 (Anna Cloud Agent), and Windows x64.",
   "category": "productivity",
