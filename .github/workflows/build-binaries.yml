@@ -127,8 +127,8 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.3.3
-          name: "ClipStudio AI v0.3.3 (Multi-Platform Binaries)"
+          tag_name: v0.3.4
+          name: "ClipStudio AI v0.3.4 (Multi-Platform Binaries)"
           body: |
             Official multi-platform Executa binaries for ClipStudio AI on Anna AI OS.
             Includes:

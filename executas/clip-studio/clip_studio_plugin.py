@@ -13,7 +13,7 @@ from typing import List, Dict, Any, Optional
 
 MANIFEST = {
     "display_name": "ClipStudio Engine",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "description": "YouTube viral clipping engine, transcript intelligence, and hook extraction.",
     "host_capabilities": ["llm.sample"],
     "tools": [

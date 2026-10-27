@@ -161,17 +161,26 @@ function switchTab(isManual) {
   }
 }
 
+function extractVideoId(url) {
+  if (!url) return "";
+  url = url.trim();
+  if (url.length === 11 && /^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+  const patterns = [
+    /(?:v=|\/v\/|embed\/|shorts\/|youtu\.be\/|\/watch\?v=|\/watch\?.+&v=)([^#&?]{11})/,
+    /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([^#&?]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m && m[1]) return m[1];
+  }
+  return "";
+}
+
 function getCanonicalYoutubeUrl(clip, videoId) {
   const sec = Math.floor(clip.start_time || 0);
-  const vId = videoId || (clip.youtube_url ? (clip.youtube_url.match(/(?:v=|youtu\.be\/)([^?&#]+)/) || [])[1] : "");
+  const vId = videoId || extractVideoId(clip.youtube_url);
   if (vId) {
     return `https://www.youtube.com/watch?v=${vId}&t=${sec}s`;
-  }
-  if (clip.youtube_url && clip.youtube_url.includes("youtu.be/")) {
-    const m = clip.youtube_url.match(/youtu\.be\/([^?&]+)/);
-    if (m) {
-      return `https://www.youtube.com/watch?v=${m[1]}&t=${sec}s`;
-    }
   }
   return clip.youtube_url || "";
 }
@@ -248,7 +257,7 @@ function renderClips(data) {
     return;
   }
 
-  clips.forEach((clip, index) => {
+  data.clips.forEach((clip, index) => {
     const card = document.createElement("div");
     card.className = "clip-card";
     card.id = `card-${clip.id}`;
@@ -269,7 +278,7 @@ function renderClips(data) {
           <span class="badge">${clip.duration}s</span>
         </div>
         <div>
-          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noreferrer" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
+          ${canonicalYtUrl ? `<a href="${canonicalYtUrl}" target="_blank" rel="noreferrer noopener" class="timecode-link">▶ ${clip.start_timestamp} - ${clip.end_timestamp} ↗</a>` : `<span class="badge">${clip.start_timestamp} - ${clip.end_timestamp}</span>`}
         </div>
       </div>
 
@@ -472,27 +481,29 @@ async function runAnalysis(payload) {
     if (!baseData || !baseData.clips || baseData.clips.length === 0) {
       setLoading(true, "AI Engine: Generating viral hooks from video intelligence...");
       
-      // Match demo transcript if URL belongs to one of the presets, else generate synthetic intelligent clips
-      let fallbackTranscript = payload && payload.transcript_text;
-      let targetTitle = (baseData && baseData.title) || "YouTube Video Analysis";
-      let targetAuthor = (baseData && baseData.author) || "Creator";
-      let targetThumbnail = (baseData && baseData.thumbnail_url) || "";
       const currentUrl = (payload && payload.url) || "";
+      const vid = extractVideoId(currentUrl);
+
+      // 1. Check if video matches Raymond Chin or Zoo Classic
+      let fallbackTranscript = payload && payload.transcript_text;
+      let targetTitle = (baseData && baseData.title) || (vid ? `YouTube Video (${vid})` : "YouTube Video Analysis");
+      let targetAuthor = (baseData && baseData.author) || "Creator";
+      let targetThumbnail = (baseData && baseData.thumbnail_url) || (vid ? `https://i.ytimg.com/vi/${vid}/hqdefault.jpg` : "");
 
       if (!fallbackTranscript) {
-        if (currentUrl.includes("griZI_8FmcA")) {
+        if (vid.includes("griZI_8FmcA") || vid.includes("griZl_8FmcA")) {
           fallbackTranscript = PRELOADED_DEMOS.raymond.transcript;
           targetTitle = PRELOADED_DEMOS.raymond.title;
           targetAuthor = PRELOADED_DEMOS.raymond.author;
           targetThumbnail = PRELOADED_DEMOS.raymond.thumbnail;
-        } else if (currentUrl.includes("jNQXAC9IVRw")) {
+        } else if (vid.includes("jNQXAC9IVRw")) {
           fallbackTranscript = PRELOADED_DEMOS.zoo.transcript;
           targetTitle = PRELOADED_DEMOS.zoo.title;
           targetAuthor = PRELOADED_DEMOS.zoo.author;
           targetThumbnail = PRELOADED_DEMOS.zoo.thumbnail;
         } else {
           // General intelligent fallback based on video title & focus
-          fallbackTranscript = `00:00:00,000 --> 00:00:15,000\nHere is the most important lesson from this video that completely changes the game.\n\n00:00:15,000 --> 00:00:35,000\nThe fundamental truth nobody talks about is execution speed over perfectionism.\n\n00:00:35,000 --> 00:00:55,000\nWhen you master this specific principle, results start compounding exponentially.\n\n00:00:55,000 --> 00:01:20,000\nMake sure to save this breakdown and implement it in your workflow today!`;
+          fallbackTranscript = `00:00:00,000 --> 00:00:15,000\nHere is the most important breakthrough from this video that completely changes the game.\n\n00:00:15,000 --> 00:00:35,000\nThe fundamental truth nobody talks about is execution speed over perfectionism.\n\n00:00:35,000 --> 00:00:55,000\nWhen you master this specific principle, results start compounding exponentially.\n\n00:00:55,000 --> 00:01:20,000\nMake sure to save this breakdown and implement it in your workflow today!`;
         }
       }
 
@@ -513,6 +524,7 @@ async function runAnalysis(payload) {
           if (targetTitle) baseData.title = targetTitle;
           if (targetAuthor) baseData.author = targetAuthor;
           if (targetThumbnail) baseData.thumbnail_url = targetThumbnail;
+          if (vid) baseData.video_id = vid;
           showToast("Analyzed via Intelligent Fallback!");
         }
       }
